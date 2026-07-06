@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keep in sync with pyproject.toml's requires-python / classifiers.
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Create venv and install (editable + dev)
+        run: |
+          uv venv --python ${{ matrix.python-version }}
+          uv pip install -e ".[dev]"
+
+      - name: Ruff (lint Python)
+        run: uv run ruff check .
+
+      - name: Mypy (type-check library)
+        run: uv run mypy src/
+
+      - name: Pytest (unit tests)
+        run: uv run pytest -q
+
+      - name: Robocop (lint Robot suites)
+        run: uv run robocop check src/ tests/ examples/ tests_mock/
+
+      - name: Robot dry-run (tests/examples suites resolve; no live NSX touched)
+        run: uv run robot --dryrun -V env.example.yaml -d results tests/ examples/
+
+      - name: Robot contract tests (real run against an in-process mock NSX API)
+        run: uv run robot -V env.example.yaml -d results-mock tests_mock/
+
+      - name: Build wheel + sdist
+        run: uv build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-py${{ matrix.python-version }}
+          path: dist/*
+
+      - name: Upload dry-run/contract results on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: robot-results-py${{ matrix.python-version }}
+          path: |
+            results/
+            results-mock/
