@@ -1,0 +1,17 @@
+# LiteLLM Proxy Configuration - Local Models
+# Uses sentence-transformers for local embeddings (no API key needed)
+# See: https://docs.litellm.ai/docs/providers/sentence_transformers
+
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: "os.environ/OPENAI_API_KEY"
+
+  - model_name: local-embedding
+    litellm_params:
+      model: sentence_transformers/BAAI/bge-large-en-v1.5
+      # No API key needed for local models
+
+general_settings:
+  master_key: "os.environ/LITELLM_MASTER_KEY"

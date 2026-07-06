@@ -1,0 +1,52 @@
+version: '3.3'
+
+services:
+  # ===== Scraper Job (one-shot) =====
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+      args:
+        http_proxy: "http://noosl01cs-net.netcom.no:8080"
+        https_proxy: "http://noosl01cs-net.netcom.no:8080"
+        HTTP_PROXY: "http://noosl01cs-net.netcom.no:8080"
+        HTTPS_PROXY: "http://noosl01cs-net.netcom.no:8080"
+        no_proxy: ".teliacompany.net,localhost,127.0.0.1"
+        NO_PROXY: ".teliacompany.net,localhost,127.0.0.1"
+    container_name: entrag-scraper
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    environment:
+      # Scraper must reach broadcom.com via corporate proxy.
+      HTTP_PROXY: "http://noosl01cs-net.netcom.no:8080"
+      HTTPS_PROXY: "http://noosl01cs-net.netcom.no:8080"
+      NO_PROXY: ".teliacompany.net,localhost,127.0.0.1"
+      http_proxy: "http://noosl01cs-net.netcom.no:8080"
+      https_proxy: "http://noosl01cs-net.netcom.no:8080"
+      no_proxy: ".teliacompany.net,localhost,127.0.0.1"
+    restart: "no"
+    entrypoint: ["python", "-m", "scripts.scrape"]
+
+  # ===== Ingestion Job (one-shot) =====
+  ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+      args:
+        http_proxy: "http://noosl01cs-net.netcom.no:8080"
+        https_proxy: "http://noosl01cs-net.netcom.no:8080"
+        HTTP_PROXY: "http://noosl01cs-net.netcom.no:8080"
+        HTTPS_PROXY: "http://noosl01cs-net.netcom.no:8080"
+        no_proxy: ".teliacompany.net,localhost,127.0.0.1"
+        NO_PROXY: ".teliacompany.net,localhost,127.0.0.1"
+    container_name: entrag-ingest
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    environment:
+      # Ingest only contacts corporate LiteLLM for embeddings — no proxy needed (in NO_PROXY).
+      NO_PROXY: ".teliacompany.net,localhost,127.0.0.1"
+      no_proxy: ".teliacompany.net,localhost,127.0.0.1"
+    restart: "no"
+    entrypoint: ["python", "-m", "scripts.ingest"]

@@ -1,0 +1,31 @@
+version: '3.3'
+
+services:
+  # ===== Main Application =====
+  rag-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+      args:
+        http_proxy: "http://noosl01cs-net.netcom.no:8080"
+        https_proxy: "http://noosl01cs-net.netcom.no:8080"
+        HTTP_PROXY: "http://noosl01cs-net.netcom.no:8080"
+        HTTPS_PROXY: "http://noosl01cs-net.netcom.no:8080"
+        no_proxy: ".teliacompany.net,localhost,127.0.0.1"
+        NO_PROXY: ".teliacompany.net,localhost,127.0.0.1"
+    container_name: entrag-app
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    environment:
+      # Corporate proxy — required for broadcom.com scraping and any public internet access.
+      # aiexp-litellm.cirrus-dev.teliacompany.net is excluded via NO_PROXY (.teliacompany.net).
+      HTTP_PROXY: "http://noosl01cs-net.netcom.no:8080"
+      HTTPS_PROXY: "http://noosl01cs-net.netcom.no:8080"
+      NO_PROXY: ".teliacompany.net,localhost,127.0.0.1"
+      http_proxy: "http://noosl01cs-net.netcom.no:8080"
+      https_proxy: "http://noosl01cs-net.netcom.no:8080"
+      no_proxy: ".teliacompany.net,localhost,127.0.0.1"
+    restart: unless-stopped

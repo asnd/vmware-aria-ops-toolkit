@@ -1,0 +1,79 @@
+[project]
+name = "entrag"
+version = "0.1.0"
+description = "VMware/Broadcom Knowledge Base RAG Application"
+requires-python = ">=3.12"
+dependencies = [
+    # LlamaIndex core + integrations
+    "llama-index-core>=0.12",
+    "llama-index-llms-litellm",
+    "llama-index-embeddings-litellm",
+    "llama-index-vector-stores-lancedb",
+    # Vector store
+    "lancedb>=0.15",
+    "pandas>=1.4",
+    # Frontend
+    "chainlit>=2.7.0",
+    # Scraping (lightweight)
+    "httpx",
+    "beautifulsoup4",
+    "lxml",
+    # Config
+    "pydantic-settings",
+    # MCP server
+    "mcp>=1.0.0",
+    "uvicorn>=0.30.0",
+    "starlette",
+    "PyJWT[crypto]>=2.8.0",
+    # Utilities
+    "rich",
+    "click",
+    "tenacity",
+]
+
+[project.optional-dependencies]
+# Heavy optional deps — NOT installed in container by default
+playwright = [
+    # Browser-based auth scraping + LlamaIndex web reader (~700MB with chromium)
+    "playwright",
+    "llama-index-readers-web",
+]
+eval = [
+    # Evaluation framework
+    "ragas",
+]
+full = [
+    "entrag[playwright,eval]",
+]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-asyncio",
+    "mypy",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src", "scripts"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_return_any = true
+warn_unused_configs = true
+
+[project.scripts]
+entrag-scrape = "scripts.scrape:main"
+entrag-ingest = "scripts.ingest:main"
+entrag-serve = "src.chat_app:main"
+entrag-mcp = "src.mcp_server.__main__:main"

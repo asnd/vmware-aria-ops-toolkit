@@ -1,0 +1,32 @@
+# Scraper job image (~700MB with Playwright)
+# Used as one-shot job: docker compose --profile scrape run --rm scraper ...
+
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libxml2 \
+    libxslt1.1 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir uv
+
+WORKDIR /app
+
+COPY pyproject.toml .
+
+RUN uv venv /app/.venv && \
+    . /app/.venv/bin/activate && \
+    uv pip install -e ".[dev]" && \
+    uv pip install -e ".[playwright]" && \
+    playwright install chromium
+
+COPY src/ src/
+COPY scripts/ scripts/
+COPY tests/ tests/
+
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app"
+
+VOLUME ["/app/data"]
+
+ENTRYPOINT ["python", "-m", "scripts.scrape"]

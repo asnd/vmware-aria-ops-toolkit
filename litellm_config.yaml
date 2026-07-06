@@ -1,0 +1,16 @@
+# LiteLLM Proxy Configuration
+# See: https://docs.litellm.ai/docs/proxy/configs
+
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: "os.environ/OPENAI_API_KEY"
+
+  - model_name: text-embedding-3-small
+    litellm_params:
+      model: openai/text-embedding-3-small
+      api_key: "os.environ/OPENAI_API_KEY"
+
+general_settings:
+  master_key: "sk-entrag-dev"
