@@ -1,0 +1,101 @@
+# NSX-T/AVI Site Inventory Configuration
+# Copy this file to sites.yml and configure with your actual sites
+#
+# Supports variable substitution:
+# - ${ENV:VAR_NAME} - Read from environment variable
+# - ${VAULT:path/to/secret} - Read from Vault (future implementation)
+
+sites:
+  # Production Site - DC1
+  - site_id: "dc1-prod"
+    name: "DC1 Production"
+    region: "us-east"
+    nsxt:
+      manager_url: "https://nsxt-dc1.example.com"
+      username: "api-gateway"
+      password: "${ENV:NSXT_DC1_PASSWORD}"  # Read from environment
+      verify_ssl: true
+      # cert_path: "config/nsxt-dc1-cert.pem"  # Optional: custom CA cert
+    avi:
+      controller_url: "https://avi-dc1.example.com"
+      username: "api-gateway"
+      password: "${ENV:AVI_DC1_PASSWORD}"
+      tenant: "admin"
+      api_version: "22.1.3"
+      verify_ssl: true
+    tags:
+      environment: production
+      cost_center: engineering
+      tier: gold
+
+  # Production Site - DC2
+  - site_id: "dc2-prod"
+    name: "DC2 Production"
+    region: "us-west"
+    nsxt:
+      manager_url: "https://nsxt-dc2.example.com"
+      username: "api-gateway"
+      password: "${ENV:NSXT_DC2_PASSWORD}"
+      verify_ssl: true
+    avi:
+      controller_url: "https://avi-dc2.example.com"
+      username: "api-gateway"
+      password: "${ENV:AVI_DC2_PASSWORD}"
+      tenant: "admin"
+      api_version: "22.1.3"
+      verify_ssl: true
+    tags:
+      environment: production
+      cost_center: engineering
+      tier: gold
+
+  # Staging Site
+  - site_id: "stg-us-central"
+    name: "Staging US Central"
+    region: "us-central"
+    nsxt:
+      manager_url: "https://nsxt-staging.example.com"
+      username: "api-gateway"
+      password: "${ENV:NSXT_STAGING_PASSWORD}"
+      verify_ssl: false  # Self-signed cert in staging
+    avi:
+      controller_url: "https://avi-staging.example.com"
+      username: "api-gateway"
+      password: "${ENV:AVI_STAGING_PASSWORD}"
+      tenant: "admin"
+      api_version: "22.1.3"
+      verify_ssl: false
+    tags:
+      environment: staging
+      cost_center: qa
+      tier: silver
+
+  # Dev Site - NSX-T only
+  - site_id: "dev-lab"
+    name: "Development Lab"
+    region: "us-east"
+    nsxt:
+      manager_url: "https://nsxt-dev.example.com"
+      username: "admin"
+      password: "${ENV:NSXT_DEV_PASSWORD}"
+      verify_ssl: false
+    tags:
+      environment: development
+      cost_center: engineering
+      tier: bronze
+
+  # Site with AVI only (no NSX-T)
+  - site_id: "cloud-avi"
+    name: "Cloud AVI Site"
+    region: "eu-west"
+    avi:
+      controller_url: "https://avi-cloud.example.com"
+      username: "api-gateway"
+      password: "${ENV:AVI_CLOUD_PASSWORD}"
+      tenant: "admin"
+      api_version: "22.1.3"
+      verify_ssl: true
+    tags:
+      environment: production
+      cost_center: cloud
+      tier: gold
