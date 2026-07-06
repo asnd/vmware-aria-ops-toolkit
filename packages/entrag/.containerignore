@@ -1,0 +1,10 @@
+# Exclude local development artifacts from build context
+.venv/
+.git/
+.ruff_cache/
+.pytest_cache/
+__pycache__/
+data/
+*.egg-info/
+.env
+.DS_Store
