@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nsx-avi-gateway"
+version = "1.0.0"
+description = "NSX-T and AVI Load Balancer API Gateway for multi-site management"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [
+    {name = "Infrastructure Team"}
+]
+
+dependencies = [
+    # FastAPI and server
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.1.0",
+
+    # Templates and UI
+    "jinja2>=3.1.3",
+    "python-multipart>=0.0.7",
+
+    # Authentication
+    "PyJWT[crypto]>=2.10.1",
+    "passlib[bcrypt]>=1.7.4",
+    "bcrypt<5",
+
+    # Configuration and data
+    "pyyaml>=6.0.1",
+    "python-dotenv>=1.0.0",
+
+    # Async utilities
+    "aiofiles>=23.2.1",
+    "httpx>=0.26.0",
+
+    # Logging
+    "structlog>=24.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "httpx>=0.26.0",  # For TestClient
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+    "black>=24.1.0",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = ["E501"]  # Line too long
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short --cov=app --cov-report=html"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["tests*", "logs*", "config*"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+ignore_missing_imports = true

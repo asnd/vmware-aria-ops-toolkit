@@ -1,0 +1,159 @@
+# Operations Allowlist Configuration
+# Copy this file to operations_allowlist.yml
+#
+# This defines which operations are permitted on NSX-T and AVI.
+# Default policy: DENY ALL except explicitly listed operations
+#
+# Operation format: <resource>.<action>
+# Actions: create, read, update, delete
+
+# NSX-T Operations
+nsxt:
+  # Segment operations
+  segments:
+    - create      # Allow creating new segments
+    - read        # Allow reading segment details
+    - update      # Allow updating segment configuration
+    # DELETE intentionally not listed - blocked by default
+
+  # Tier-1 Gateway operations
+  tier1_gateways:
+    - create      # Allow creating T1 gateways
+    - read        # Allow reading T1 configuration
+    - update      # Allow updating T1 configuration
+    # DELETE blocked
+
+  # NAT Rules (safe to delete)
+  nat_rules:
+    - create
+    - read
+    - update
+    - delete      # NAT rules can be safely deleted
+
+  # Firewall Rules
+  firewall_rules:
+    - create
+    - read
+    - update
+    # DELETE blocked for safety
+
+  # DHCP Configuration
+  dhcp_servers:
+    - create
+    - read
+    - update
+
+  # IP Pools
+  ip_pools:
+    - create
+    - read
+    - update
+
+  # Explicitly blocked operations (takes precedence)
+  blocked:
+    - "tier0_gateways.delete"        # Never allow T0 deletion
+    - "tier0_gateways.update"        # Never allow T0 updates
+    - "segments.delete"              # Prevent accidental segment deletion
+    - "tier1_gateways.delete"        # Prevent T1 deletion
+    - "transport_zones.*"            # Block all transport zone operations
+    - "edge_clusters.*"              # Block edge cluster operations
+    - "security_policies.*"          # Block distributed firewall policy changes
+    - "firewall_rules.delete"        # Block firewall rule deletion
+    - "gateway_policies.*"           # Block gateway policy changes
+
+# AVI Load Balancer Operations
+avi:
+  # Virtual Services
+  virtual_services:
+    - create
+    - read
+    - update
+    # DELETE blocked
+
+  # Pools
+  pools:
+    - create
+    - read
+    - update
+    - delete      # Pools can be safely deleted when not in use
+
+  # Pool Members
+  pool_members:
+    - create
+    - read
+    - update
+    - delete
+
+  # VIPs
+  vips:
+    - create
+    - read
+    - update
+
+  # Health Monitors
+  health_monitors:
+    - create
+    - read
+    - update
+
+  # SSL Certificates
+  ssl_certificates:
+    - create
+    - read
+    - update
+
+  # Application Profiles
+  application_profiles:
+    - create
+    - read
+    - update
+
+  # Explicitly blocked operations
+  blocked:
+    - "virtual_services.delete"      # Prevent VS deletion
+    - "cloud_config.*"               # Block cloud configuration
+    - "service_engines.delete"       # Block SE deletion
+    - "se_groups.*"                  # Block SE group changes
+    - "networks.*"                   # Block network configuration
+    - "tenants.*"                    # Block tenant operations
+    - "users.*"                      # Block user management
+    - "roles.*"                      # Block role management
+
+# Role-based overrides (adds permissions to specific roles)
+role_overrides:
+  # Admin role can perform additional operations
+  admin:
+    additional_permissions:
+      # NSX-T
+      - "nsxt.segments.delete"
+      - "nsxt.tier1_gateways.delete"
+      - "nsxt.firewall_rules.delete"
+
+      # AVI
+      - "avi.virtual_services.delete"
+      - "avi.vips.delete"
+
+  # Network operators have standard permissions (no overrides)
+  operator:
+    additional_permissions: []
+
+  # Read-only role
+  readonly:
+    # Only read operations allowed
+    allowed_operations:
+      - "nsxt.*.read"
+      - "avi.*.read"
+
+# Global settings
+settings:
+  # Require explicit approval for these operations (future feature)
+  require_approval:
+    - "*.delete"
+
+  # Operations that require a confirmation ticket number
+  require_ticket:
+    - "nsxt.tier1_gateways.delete"
+    - "avi.virtual_services.delete"
+
+  # Audit logging (always enabled for all operations)
+  audit_all_operations: true
